@@ -3974,7 +3974,7 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 410087039}
   m_Enabled: 1
-  serializedVersion: 12
+  serializedVersion: 13
   m_Type: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 2
@@ -4026,7 +4026,7 @@ Light:
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
-  m_ShadowRadius: 0
+  m_ShapeRadius: 0
   m_ShadowAngle: 0
   m_LightUnit: 1
   m_LuxAtDistance: 1
@@ -12491,6 +12491,7 @@ GameObject:
   - component: {fileID: 810519843}
   - component: {fileID: 810519842}
   - component: {fileID: 810519841}
+  - component: {fileID: 810519844}
   m_Layer: 0
   m_Name: Terrain
   m_TagString: Untagged
@@ -12557,6 +12558,7 @@ Terrain:
   m_AllowAutoConnect: 1
   m_EnableHeightmapRayTracing: 1
   m_EnableTreesAndDetailsRayTracing: 0
+  m_EnableHeightmapLODFrustumCulling: 1
   m_TreeMotionVectorModeOverride: 3
 --- !u!4 &810519843
 Transform:
@@ -12573,6 +12575,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 43835904}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &810519844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 810519840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df1646390b94dee47b0f0b7c7fc7e0f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyUI
 --- !u!43 &821237447
 Mesh:
   m_ObjectHideFlags: 0
@@ -14158,6 +14172,7 @@ MonoBehaviour:
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  m_InScenePlaced: 1
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -14198,6 +14213,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+  Lobby: {fileID: 11400000, guid: afe479922d880dc40876f76bcff53916, type: 2}
 --- !u!114 &950196603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14263,7 +14279,11 @@ GameObject:
   - component: {fileID: 971321420}
   - component: {fileID: 971321419}
   - component: {fileID: 971321418}
-  - component: {fileID: 971321421}
+  - component: {fileID: 971321424}
+  - component: {fileID: 971321423}
+  - component: {fileID: 971321422}
+  - component: {fileID: 971321425}
+  - component: {fileID: 971321426}
   m_Layer: 0
   m_Name: Network Manager
   m_TagString: Untagged
@@ -14321,7 +14341,7 @@ MonoBehaviour:
     PlayerPrefab: {fileID: 4688565802699289721, guid: d21cdc166e6890841ad3494780d9d9aa, type: 3}
     Prefabs:
       NetworkPrefabsLists:
-      - {fileID: 11400000, guid: 5dd0674a934303a49ba86f0fc8f992d8, type: 2}
+      - {fileID: 11400000, guid: bf94dd35f339a874b9f18c8bb20597ff, type: 2}
     TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
@@ -14360,7 +14380,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &971321421
+--- !u!114 &971321422
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -14369,9 +14389,104 @@ MonoBehaviour:
   m_GameObject: {fileID: 971321417}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b724a13ab1088ec4cbcdff4eaf61484a, type: 3}
+  m_Script: {fileID: 11500000, guid: 471b344610fa24bb3ac22e780837342c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RelayManager
+  m_EditorClassIdentifier: Blocks.Vivox::Blocks.Vivox.VivoxServiceInitializer
+  m_EnableLogging: 1
+--- !u!114 &971321423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 971321417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d9bc7f42c0e1b349829e6e45ba8bf95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Services.Authentication::Unity.Services.Authentication.Components.PlayerAuthentication
+  UseCustomServices: 0
+  ServicesIdentifier: 
+  ShowAdvancedFeatures: 0
+  SetCustomProfile: 0
+  Profile: 
+  SignInAnonymously: 1
+  FetchPlayerInfo: 1
+  FetchPlayerName: 1
+  GenerateName: 1
+  Events:
+    SignedIn:
+      m_PersistentCalls:
+        m_Calls: []
+    SignInFailed:
+      m_PersistentCalls:
+        m_Calls: []
+    SignedOut:
+      m_PersistentCalls:
+        m_Calls: []
+    Expired:
+      m_PersistentCalls:
+        m_Calls: []
+    SignInCodeReceived:
+      m_PersistentCalls:
+        m_Calls: []
+    SignInCodeExpired:
+      m_PersistentCalls:
+        m_Calls: []
+--- !u!114 &971321424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 971321417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d94b93b32e10188419629795f25734b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Services.Core.Components::Unity.Services.Core.Components.ServicesInitialization
+  UseCustomServices: 0
+  ServicesIdentifier: 
+  ShowAdvancedFeatures: 0
+  InitializeOnStart: 1
+  UseCustomEnvironment: 0
+  EnvironmentName: production
+  Events:
+    Initialized:
+      m_PersistentCalls:
+        m_Calls: []
+    InitializeFailed:
+      m_PersistentCalls:
+        m_Calls: []
+--- !u!114 &971321425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 971321417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a47b2696b71a44579b7205281fa60be9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Services.Multiplayer::Unity.Services.Multiplayer.Components.SessionConnectorBehaviour
+  UseCustomServices: 0
+  ServicesIdentifier: 
+  ShowAdvancedFeatures: 0
+  ExecuteOnSignIn: 0
+  SessionConnector: {fileID: 11400000, guid: 5ed08ce47af26dc40ae57e44228a4202, type: 2}
+--- !u!114 &971321426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 971321417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6fd89dc549847f4096c58273ff2e979, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Transports.SinglePlayer.SinglePlayerTransport
 --- !u!1 &1010357784
 GameObject:
   m_ObjectHideFlags: 0
@@ -15706,6 +15821,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 690f5987adc2824499aec874b7c2517d, type: 2}
+    - target: {fileID: 3373912634716443392, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
+      propertyPath: m_InScenePlaced
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3373912634716443392, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 4214785370
@@ -39354,8 +39473,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1698959789}
   - component: {fileID: 1698959788}
-  - component: {fileID: 1698959790}
   - component: {fileID: 1698959791}
+  - component: {fileID: 1698959790}
   m_Layer: 5
   m_Name: Menu UI
   m_TagString: Untagged
@@ -39410,9 +39529,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1698959787}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df1646390b94dee47b0f0b7c7fc7e0f2, type: 3}
+  m_Script: {fileID: 11500000, guid: 00561728db7cb084e828b99245d9b70b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LobbyUI
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyController
 --- !u!114 &1698959791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -39422,9 +39541,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1698959787}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00561728db7cb084e828b99245d9b70b, type: 3}
+  m_Script: {fileID: 11500000, guid: df1646390b94dee47b0f0b7c7fc7e0f2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LobbyController
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyUI
 --- !u!1 &1761616178
 GameObject:
   m_ObjectHideFlags: 0

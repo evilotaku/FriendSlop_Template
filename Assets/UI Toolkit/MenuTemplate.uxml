@@ -1,14 +1,32 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="ChannelRoster" src="project://database/Assets/Blocks/Vivox/UI/ChannelRoster.uxml?fileID=9197481963319205126&amp;guid=f5e3833453a25d44dbe3e77a4454f6d9&amp;type=3#ChannelRoster"/>
     <Style src="project://database/Assets/UI%20Toolkit/NewUSSFile.uss?fileID=7433441132597879392&amp;guid=e6b15c5266bff3b4e905d4623228ceb6&amp;type=3#NewUSSFile"/>
     <ui:VisualElement style="position: absolute; left: 0; top: 0; bottom: 0; width: 18px; background-color: rgb(24, 24, 24);"/>
-    <ui:Label text="First Person Multiplayer" style="color: rgb(240, 240, 248); -unity-font-style: bold; font-size: 103px; position: absolute; top: 178px; left: 73px; height: 148px; width: 1336px;"/>
+    <ui:Label text="FriendSlop Template" style="color: rgb(240, 240, 248); -unity-font-style: bold; font-size: 103px; position: absolute; top: 178px; left: 73px; height: 148px; width: 1336px;"/>
     <ui:VisualElement style="position: absolute; left: 73px; top: 342px; width: 466px; height: 4px; background-color: rgb(50, 50, 55);"/>
-    <ui:Button name="start-btn" text="Start" style="height: 116px; width: 336px; position: absolute; top: 569px; left: 102px; font-size: 45px; background-color: rgb(24, 24, 24);"/>
-    <ui:Button name="quit-btn" text="Quit" style="height: 116px; width: 336px; position: absolute; top: 700px; left: 103px; font-size: 45px;"/>
-    <ui:Button name="host-btn" text="Host" style="height: 115px; width: 336px; position: absolute; top: 772px; left: 1262px; font-size: 45px; background-color: rgb(220, 80, 80); color: rgb(240, 240, 248); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
-    <ui:Button name="leave-btn" text="Leave" style="height: 116px; width: 336px; position: absolute; top: 905px; left: 1263px; font-size: 45px; display: none;"/>
-    <ui:Button name="join-btn" text="Join" style="height: 116px; width: 336px; position: absolute; top: 905px; left: 1263px; font-size: 45px;"/>
-    <ui:TextField name="join-code-field" label="" placeholder-text="X - X - X - X" max-length="6" style="position: absolute; top: 921px; left: 1611px; height: 92px; width: 280px; font-size: 35px;"/>
+    <ui:Button name="start-btn" text="Start Game" style="height: 116px; width: 336px; position: absolute; top: 445px; left: 914px; font-size: 45px; background-color: rgb(24, 24, 24); display: flex; visibility: visible;"/>
+    <ui:Button name="ready-btn" text="Ready?" style="height: 116px; width: 336px; position: absolute; top: 580px; left: 914px; font-size: 45px; background-color: rgb(24, 24, 24); display: flex;"/>
+    <ui:Button name="quit-btn" text="Quit" style="height: 69px; width: 142px; position: absolute; top: 992px; left: 1751px; font-size: 45px; display: flex;"/>
     <ui:Label name="status-label" text="You are a host" style="color: rgb(240, 240, 248); -unity-font-style: bold; font-size: 28px; position: absolute; top: 1012px; left: 863px;"/>
-    <ui:Button name="copy-btn" text="" style="height: 50px; width: 50px; position: absolute; top: 1003px; left: 1175px; background-image: url(&quot;project://database/Assets/Sprites/CopyClipboard.png?fileID=21300000&amp;guid=644ac3388a7b03348ba166869d1663e8&amp;type=3#CopyClipboard&quot;); -unity-background-scale-mode: scale-to-fit; background-color: rgba(0, 0, 0, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; display: none;"/>
+    <ui:VisualElement name="SessionMenu" style="flex-grow: initial; width: 833px; height: 513px; top: 40%; left: 3%; flex-direction: column; background-color: rgba(0, 0, 0, 0.965); justify-content: center; align-items: center; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; border-top-left-radius: 31px; border-top-right-radius: 31px; border-bottom-right-radius: 31px; border-bottom-left-radius: 31px;">
+        <ui:VisualElement style="flex-grow: 1; width: 473px; flex-direction: row; height: 96px; justify-content: center;">
+            <Blocks.Sessions.QuickJoinButton quick-join-settings="project://database/Assets/Blocks/MultiplayerSession/Settings/QuickJoinSettings.asset?fileID=11400000&amp;guid=342532e706f5ac34582e818ea7e1ae33&amp;type=2#QuickJoinSettings" data-source="project://database/Assets/Create%20or%20Join%20Session.asset?fileID=11400000&amp;guid=5ed08ce47af26dc40ae57e44228a4202&amp;type=2#Create or Join Session">
+                <Bindings>
+                    <ui:DataBinding property="SessionSettings" binding-mode="ToTarget"/>
+                </Bindings>
+            </Blocks.Sessions.QuickJoinButton>
+            <Blocks.Sessions.Common.LeaveSessionButton data-source="project://database/Assets/Create%20or%20Join%20Session.asset?fileID=11400000&amp;guid=5ed08ce47af26dc40ae57e44228a4202&amp;type=2#Create or Join Session">
+                <Bindings>
+                    <ui:DataBinding property="SessionType" data-source-path="m_MultiplayerSession.m_SessionType" binding-mode="ToTarget"/>
+                </Bindings>
+            </Blocks.Sessions.Common.LeaveSessionButton>
+        </ui:VisualElement>
+        <Blocks.Sessions.CreateSessionElement session-settings="project://database/Assets/Create%20or%20Join%20Session.asset?fileID=11400000&amp;guid=5ed08ce47af26dc40ae57e44228a4202&amp;type=2#Create or Join Session" style="width: 469px; height: 91px;"/>
+        <Blocks.Sessions.SessionBrowserElement name="SessionBrowserElement" session-settings="project://database/Assets/Create%20or%20Join%20Session.asset?fileID=11400000&amp;guid=5ed08ce47af26dc40ae57e44228a4202&amp;type=2#Create or Join Session" style="height: 440px;">
+            <Bindings>
+                <ui:DataBinding property="SessionSettings" binding-mode="ToTarget"/>
+            </Bindings>
+        </Blocks.Sessions.SessionBrowserElement>
+    </ui:VisualElement>
+    <ui:Instance template="ChannelRoster" style="position: absolute; top: 40px; left: 1235px;"/>
 </ui:UXML>

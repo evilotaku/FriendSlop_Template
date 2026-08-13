@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 
 /// <summary>
@@ -7,156 +8,99 @@ using UnityEngine;
 public class PickupItem : NetworkBehaviour
 {
     [SerializeField]
-    private float _holdDistance = 3f;
-
-    // Must clear the holder's world-scale capsule radius (~1.6 m at scale 3.19).
-    [SerializeField]
-    private float _minHoldDistance = 1.8f;
-
-    // Drop the item automatically if it is jammed at minimum distance for this long.
-    [SerializeField]
-    private float _stuckDropTime = 0.5f;
-
-    public NetworkVariable<ulong> HeldBy = new NetworkVariable<ulong>(
-        ulong.MaxValue,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server);
+    private AttachableBehaviour _attachable;
+    private AttachableNode _heldByNode;
 
     private Rigidbody _rb;
     private Collider _col;
     private Quaternion _heldRotation = Quaternion.identity;
-    private Transform _holderCamPoint;
-
-    // Root of the holding player — used to exclude the holder from surface raycasts.
-    private GameObject _holderRoot;
-
-    private float _currentDist;
-    private float _distVelocity;
-    private float _stuckTimer;
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
-        _col = GetComponent<Collider>();
-        _currentDist = _holdDistance;
+        _col = GetComponentInChildren<Collider>();
+        if (_attachable == null)
+        {
+            _attachable = GetComponentInChildren<AttachableBehaviour>();
+        }
     }
 
     public override void OnNetworkSpawn()
     {
-        HeldBy.OnValueChanged += OnHeldByChanged;
-        OnHeldByChanged(ulong.MaxValue, HeldBy.Value);
+       _attachable.AttachStateChange += OnStateChange;
     }
 
     public override void OnNetworkDespawn()
     {
-        HeldBy.OnValueChanged -= OnHeldByChanged;
+        _attachable.AttachStateChange -= OnStateChange;
     }
 
-    private void OnHeldByChanged(ulong previous, ulong current)
+    private void OnStateChange(AttachableBehaviour.AttachState state, AttachableNode node)
     {
-        bool held = current != ulong.MaxValue;
-
-        _col.enabled = !held;
-
-        if (held)
+        switch (state)
         {
-            // Clear velocities before making kinematic — Unity 6 blocks writes on kinematic bodies.
-            _rb.linearVelocity = Vector3.zero;
-            _rb.angularVelocity = Vector3.zero;
+            case AttachableBehaviour.AttachState.Attached:
+                _col.enabled = false;
+                _rb.linearVelocity = Vector3.zero;
+                _rb.angularVelocity = Vector3.zero;
+                _rb.isKinematic = true;
+                _rb.interpolation = RigidbodyInterpolation.None;
+                _heldByNode = node;
+                break;
+            case AttachableBehaviour.AttachState.Detached:               
+                _rb.isKinematic = false;
+                _rb.interpolation = RigidbodyInterpolation.Interpolate;
+                _heldByNode = null;
+                break;
         }
-
-        _rb.isKinematic = held;
-        _rb.interpolation = held ? RigidbodyInterpolation.None
-                                 : RigidbodyInterpolation.Interpolate;
-    }
-
-    private void LateUpdate()
-    {
-        if (!IsServer || HeldBy.Value == ulong.MaxValue) return;
-
-        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(HeldBy.Value, out var client)
-            || client.PlayerObject == null)
-        {
-            HeldBy.Value = ulong.MaxValue;
-            return;
-        }
-
-        var camPoint = _holderCamPoint != null ? _holderCamPoint : client.PlayerObject.transform;
-        var origin = camPoint.position;
-        var forward = camPoint.forward;
-
-        // RaycastAll so we can skip hits on the holder's own body before checking geometry.
-        float rawTarget = _holdDistance;
-        var hits = Physics.RaycastAll(origin, forward, _holdDistance);
-        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
-
-        foreach (var h in hits)
-        {
-            if (_holderRoot != null && h.collider.transform.IsChildOf(_holderRoot.transform))
-                continue;
-
-            rawTarget = Mathf.Max(h.distance - 0.15f, _minHoldDistance);
-            break;
-        }
-
-        // Auto-drop when jammed at minimum distance — item is stuck against geometry.
-        if (rawTarget <= _minHoldDistance + 0.01f)
-        {
-            _stuckTimer += Time.deltaTime;
-            if (_stuckTimer >= _stuckDropTime)
-            {
-                _holderCamPoint = null;
-                _holderRoot = null;
-                _heldRotation = Quaternion.identity;
-                _stuckTimer = 0f;
-                HeldBy.Value = ulong.MaxValue;
-                return;
-            }
-        }
-        else
-        {
-            _stuckTimer = 0f;
-        }
-
-        // Shrink quickly when approaching a surface, expand slowly when clearing one.
-        float smoothTime = rawTarget < _currentDist ? 0.04f : 0.3f;
-        _currentDist = Mathf.SmoothDamp(_currentDist, rawTarget, ref _distVelocity, smoothTime);
-
-        transform.position = origin + forward * _currentDist;
-        transform.rotation = client.PlayerObject.transform.rotation * _heldRotation;
     }
 
     [Rpc(SendTo.Server)]
-    public void SetHeldRotationRpc(Quaternion rotation) => _heldRotation = rotation;
-
-    [Rpc(SendTo.Server)]
-    public void PickUpRpc(ulong clientId)
+    public void SetHeldRotationRpc(Quaternion rotation)
     {
-        if (HeldBy.Value != ulong.MaxValue) return;
-
-        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client)
-            || client.PlayerObject == null) return;
-
-        _holderCamPoint = client.PlayerObject.transform.Find("CameraPoint");
-        _holderRoot = client.PlayerObject.gameObject;
-        _currentDist = _holdDistance;
-        _distVelocity = 0f;
-        _stuckTimer = 0f;
-        HeldBy.Value = clientId;
+        _heldRotation = rotation;
+        if (_attachable != null && _attachable.transform.parent != null)
+        {
+            _attachable.transform.localRotation = _heldRotation;
+        }
     }
 
     [Rpc(SendTo.Server)]
-    public void DropRpc()
+    public void PickUpRpc(RpcParams rpcParams = default)
     {
-        if (HeldBy.Value == ulong.MaxValue) return;
+        var node = NetworkManager.Singleton.ConnectedClients[rpcParams.Receive.SenderClientId].PlayerObject.GetComponentInChildren<AttachableNode>();
+        if (node == null || _attachable == null) return;
 
-        Vector3 throwDir = _holderCamPoint != null ? _holderCamPoint.forward : Vector3.forward;
-
-        _holderCamPoint = null;
-        _holderRoot = null;
+        _attachable.Attach(node);
         _heldRotation = Quaternion.identity;
-        _stuckTimer = 0f;
-        HeldBy.Value = ulong.MaxValue;
-        _rb.AddForce(throwDir * 4f, ForceMode.Impulse);
+        _attachable.transform.localRotation = _heldRotation;
+        
+    }
+
+    [Rpc(SendTo.Server)]
+    public void DropRpc(RpcParams rpcParams = default)
+    {
+        if (_heldByNode == null) return;
+
+        Vector3 dropPos = transform.position;
+        Vector3 throwDir = Vector3.forward;
+
+        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(rpcParams.Receive.SenderClientId, out var client)
+            && client.PlayerObject != null)
+        {
+            throwDir = client.PlayerObject.transform.forward;
+        }
+
+        if (_attachable != null)
+        {
+            dropPos = _attachable.transform.position;
+            _attachable.Detach();
+        }
+
+        // Snap root to where the item was visually held
+        transform.position = dropPos;
+
+        _heldByNode = null;
+        _rb.AddForce(throwDir * 1f, ForceMode.Impulse);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using Unity.Netcode;
+using Unity.Services.Multiplayer.Components;
 using UnityEngine;
 
 public enum GameState { Lobby, Playing }
@@ -18,6 +19,8 @@ public class GameManager : NetworkBehaviour
         GameState.Lobby,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server);
+
+    public MultiplayerSession Lobby;
 
     private void Awake() => Instance = this;
 
