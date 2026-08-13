@@ -1,4 +1,4 @@
-# U6-First-Person-Multiplayer
+# FriendSlop Template
 
 > **Important:** This repository is provided as a reference sample only. The maintainers **will not** and **cannot** accept pull requests, GitHub review requests, or any other GitHub-hosted issue management requests (bug reports, feature requests, discussions, etc.).
 
