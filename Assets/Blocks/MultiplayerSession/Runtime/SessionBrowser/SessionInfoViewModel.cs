@@ -38,8 +38,12 @@ namespace Blocks.Sessions
 
         /// <inheritdoc/>
         [CreateProperty]
+        public SessionInfoViewModel Self => this;
+
+        /// <inheritdoc/>
+        [CreateProperty]
         public string Name
-            => _sessionInfo?.Name ?? _session?.Name;
+=> _sessionInfo?.Name ?? _session?.Name;
 
         /// <inheritdoc/>
         [CreateProperty]

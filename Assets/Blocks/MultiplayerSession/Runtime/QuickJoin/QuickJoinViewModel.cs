@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Unity.Properties;
 using Unity.Services.Multiplayer;
@@ -90,26 +89,16 @@ namespace Blocks.Sessions
             return MultiplayerService.Instance != null;
         }
 
-        public async Task<ISession> MatchmakeSessionAsync(SessionConnector connector)
+        public async Task<ISession> MatchmakeSessionAsync(ScriptableObject connection)
         {
-            try
-            {           
-                connector.WithQuickJoin();
-                connector.Execute();
-                return connector.MultiplayerSession.Session;
+            if (connection is MatchmakingSessionConnector matchmakingConnector)
+            {
+                return await matchmakingConnector.ExecuteAsync();
+            }else            
+            {
+                (connection as SessionConnector).Execute();
+                return (connection as SessionConnector)?.MultiplayerSession?.Session;
             }
-            catch (Exception exception) 
-            { 
-                Debug.LogError(exception.Message);
-                return await Task.FromResult<ISession>(null);
-            }
-            
-        }
-
-        public Task CreateOrJoinSessionAsync(SessionConnector connector)
-        {
-            connector.Execute();
-            return Task.CompletedTask;
         }
 
         public void Dispose()

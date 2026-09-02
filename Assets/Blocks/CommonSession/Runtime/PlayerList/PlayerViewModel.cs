@@ -23,6 +23,12 @@ namespace Blocks.Sessions.Common
         /// The unique identifier for the player. If not provided for a create or join request, it will be set to the ID of the caller.
         /// </summary>
         [CreateProperty]
+        public PlayerViewModel Self => this;
+
+        /// <summary>
+        /// The unique identifier for the player. If not provided for a create or join request, it will be set to the ID of the caller.
+        /// </summary>
+        [CreateProperty]
         public string Id => _player?.Id;
 
         /// <summary>

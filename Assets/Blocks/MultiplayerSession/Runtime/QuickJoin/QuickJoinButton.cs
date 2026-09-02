@@ -1,5 +1,6 @@
-using Blocks.Common;
 using System;
+using Blocks.Common;
+using Blocks.Sessions.Common;
 using Unity.Properties;
 using Unity.Services.Multiplayer.Components;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace Blocks.Sessions
         const string k_QuickJoinButtonText = "QUICK JOIN";
 
         [UxmlAttribute, CreateProperty]
-        public SessionConnector SessionSettings
+        public ScriptableObject SessionSettings
         {
             get => m_SessionSettings;
             set
@@ -30,7 +31,7 @@ namespace Blocks.Sessions
                 }
             }
         }
-        SessionConnector m_SessionSettings;
+        ScriptableObject m_SessionSettings;
 
         [UxmlAttribute]
         public QuickJoinSettings QuickJoinSettings;
@@ -69,13 +70,26 @@ namespace Blocks.Sessions
             }
 
             _ = m_ViewModel.MatchmakeSessionAsync(SessionSettings);
-            //_ = m_ViewModel.CreateOrJoinSessionAsync(m_SessionSettings);
         }
 
         void UpdateBindings()
         {
             CleanupBindings();
-            m_ViewModel = new QuickJoinViewModel(SessionSettings?.MultiplayerSession.SessionType);
+            string sessionType = null;
+            if (SessionSettings is MatchmakingSessionConnector matchmakingConnector)
+            {
+                sessionType = matchmakingConnector.MultiplayerSession?.SessionType;
+            }
+            else if (SessionSettings is SessionConnector sessionConnector)
+            {
+                sessionType = sessionConnector.MultiplayerSession?.SessionType;
+            }
+            else if (SessionSettings is SessionSettings oldSettings)
+            {
+                sessionType = oldSettings.sessionType;
+            }
+            
+            m_ViewModel = new QuickJoinViewModel(sessionType);
             m_DataBinding.dataSource = m_ViewModel;
         }
 

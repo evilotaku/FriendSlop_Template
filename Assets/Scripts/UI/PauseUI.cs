@@ -12,6 +12,7 @@ using UnityEngine.UIElements;
 /// </summary>
 public class PauseUI : MonoBehaviour
 {
+    PanelRenderer panelRenderer;
     private VisualElement _pausePanel;
     private ScrollView _playerList;
     private Button _leaveBtn;
@@ -22,19 +23,24 @@ public class PauseUI : MonoBehaviour
     private void Start()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
+        panelRenderer = GetComponent<PanelRenderer>();
+        panelRenderer.RegisterUIReloadCallback(UIReload);
+        GameManager.OnGameStarted += OnGameStarted;
+    }
 
+    private void UIReload(PanelRenderer panelRenderer, VisualElement root)
+    {
         _pausePanel = root.Q<VisualElement>("pause-panel");
         _playerList = root.Q<ScrollView>("player-list");
         _leaveBtn = root.Q<Button>("pause-leave-btn");
 
         if (_leaveBtn != null) _leaveBtn.clicked += OnLeaveClicked;
-
-        GameManager.OnGameStarted += OnGameStarted;
     }
 
     private void OnDestroy()
     {
         GameManager.OnGameStarted -= OnGameStarted;
+        panelRenderer.UnregisterUIReloadCallback(UIReload);
     }
 
     private void OnGameStarted()
@@ -91,4 +97,6 @@ public class PauseUI : MonoBehaviour
         // Full scene reload — resets all state cleanly without manual teardown.
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+
+    
 }

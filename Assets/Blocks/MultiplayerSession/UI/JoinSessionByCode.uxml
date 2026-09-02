@@ -3,7 +3,7 @@
             <engine:Label text="JOIN SESSION BY CODE" class="blocks-header blocks-header--space-bottom blocks-header--sm"/>
             <Blocks.Sessions.CreateSessionElement class="blocks-element--space-bottom">
                 <Bindings>
-                    <engine:DataBinding property="SessionSettings" binding-mode="ToTarget" data-source-path=""/>
+                    <engine:DataBinding property="SessionSettings" binding-mode="ToTarget" data-source-path="Self"/>
                 </Bindings>
             </Blocks.Sessions.CreateSessionElement>
             <Blocks.Sessions.Common.CopySessionCodeElement class="blocks-element--space-bottom">
@@ -13,7 +13,7 @@
             </Blocks.Sessions.Common.CopySessionCodeElement>
             <Blocks.Sessions.JoinSessionByCode class="blocks-element--space-bottom">
                 <Bindings>
-                    <engine:DataBinding property="SessionSettings" binding-mode="ToTarget" data-source-path=""/>
+                    <engine:DataBinding property="SessionSettings" binding-mode="ToTarget" data-source-path="Self"/>
                 </Bindings>
             </Blocks.Sessions.JoinSessionByCode>
         </engine:VisualElement>

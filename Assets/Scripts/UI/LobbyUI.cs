@@ -15,6 +15,7 @@ public class LobbyUI : MonoBehaviour
     public event Action ReadyClicked;
 
     public string JoinCode { get; private set; } = "";
+    private PanelRenderer panelRenderer;
 
     private Button _hostBtn, _joinBtn, _startBtn, _leaveBtn, _quitBtn, _copyBtn, _readyBtn;
     private TextField _joinCodeField;
@@ -32,7 +33,16 @@ public class LobbyUI : MonoBehaviour
     private void Awake()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
+        panelRenderer = GetComponent<PanelRenderer>();
+        panelRenderer.RegisterUIReloadCallback(UIReload);
 
+       
+
+        SetIdle();
+    }
+
+    private void UIReload(PanelRenderer panelRenderer, VisualElement root)
+    {
         _hostBtn = root.Q<Button>("host-btn");
         _joinBtn = root.Q<Button>("join-btn");
         _startBtn = root.Q<Button>("start-btn");
@@ -54,8 +64,6 @@ public class LobbyUI : MonoBehaviour
 
         if (_joinCodeField != null)
             _joinCodeField.RegisterValueChangedCallback(e => JoinCode = e.newValue);
-
-        SetIdle();
     }
 
     private void Start()
@@ -127,4 +135,9 @@ public class LobbyUI : MonoBehaviour
 
     private void Show(VisualElement el) { if (el != null) el.style.display = DisplayStyle.Flex; }
     private void Hide(VisualElement el) { if (el != null) el.style.display = DisplayStyle.None; }
+
+    private void OnDestroy()
+    {
+        panelRenderer.UnregisterUIReloadCallback(UIReload);
+    }
 }

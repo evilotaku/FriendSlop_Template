@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -7,15 +8,27 @@ using UnityEngine.UIElements;
 public class HudUI : MonoBehaviour
 {
     private VisualElement _root;
+    private PanelRenderer _panelRenderer;
 
     private void Start()
     {
-        _root = GetComponent<UIDocument>().rootVisualElement;
-        _root.style.display = DisplayStyle.None;
+        _panelRenderer = GetComponent<PanelRenderer>();
+        _panelRenderer.RegisterUIReloadCallback(UIReload);
+        
         GameManager.OnGameStarted += Show;
     }
 
-    private void OnDestroy() => GameManager.OnGameStarted -= Show;
+    private void UIReload(PanelRenderer panelRenderer, VisualElement root)
+    {
+        root.style.display = DisplayStyle.None;
+        _root = root;
+    }
+
+    private void OnDestroy()
+    {
+        GameManager.OnGameStarted -= Show;
+        _panelRenderer.UnregisterUIReloadCallback(UIReload);
+    }
 
     private void Show() => _root.style.display = DisplayStyle.Flex;
 }

@@ -5,6 +5,8 @@ using Unity.Properties;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+using Unity.Services.Multiplayer.Components;
+
 namespace Blocks.Sessions
 {
     [UxmlElement]
@@ -14,7 +16,7 @@ namespace Blocks.Sessions
         const string k_JoinButtonText = "JOIN";
 
         [UxmlAttribute, CreateProperty]
-        SessionSettings SessionSettings
+        ScriptableObject SessionSettings
         {
             get => m_SessionSettings;
             set
@@ -31,7 +33,7 @@ namespace Blocks.Sessions
                 }
             }
         }
-        SessionSettings m_SessionSettings;
+        ScriptableObject m_SessionSettings;
 
         JoinSessionByCodeViewModel m_ViewModel;
 
@@ -87,14 +89,46 @@ namespace Blocks.Sessions
                 return;
             }
 
-            _ = m_ViewModel.JoinSessionByCodeAsync(m_SessionSettings.ToJoinSessionOptions());
+            Unity.Services.Multiplayer.JoinSessionOptions options = null;
+            if (m_SessionSettings is MatchmakingSessionConnector matchmakingConnector)
+            {
+                options = matchmakingConnector.ToJoinSessionOptions();
+            }
+            else if (m_SessionSettings is SessionConnector sessionConnector)
+            {
+                options = new Unity.Services.Multiplayer.JoinSessionOptions
+                {
+                    Type = sessionConnector.MultiplayerSession?.SessionType,
+                    Password = sessionConnector.GetJoinOptions().Password
+                };
+            }
+            else if (m_SessionSettings is SessionSettings oldSettings)
+            {
+                options = oldSettings.ToJoinSessionOptions();
+            }
+
+            _ = m_ViewModel.JoinSessionByCodeAsync(options);
         }
 
         void UpdateBindings()
         {
             CleanupBindings();
 
-            m_ViewModel = new JoinSessionByCodeViewModel(m_SessionSettings?.sessionType);
+            string sessionType = null;
+            if (m_SessionSettings is MatchmakingSessionConnector matchmakingConnector)
+            {
+                sessionType = matchmakingConnector.MultiplayerSession?.SessionType;
+            }
+            else if (m_SessionSettings is SessionConnector sessionConnector)
+            {
+                sessionType = sessionConnector.MultiplayerSession?.SessionType;
+            }
+            else if (m_SessionSettings is SessionSettings oldSettings)
+            {
+                sessionType = oldSettings.sessionType;
+            }
+
+            m_ViewModel = new JoinSessionByCodeViewModel(sessionType);
             foreach (var binding in m_Bindings)
             {
                 binding.dataSource = m_ViewModel;

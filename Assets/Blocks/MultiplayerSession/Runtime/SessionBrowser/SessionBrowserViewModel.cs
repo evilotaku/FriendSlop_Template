@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Unity.Properties;
 using Unity.Services.Core;
 using Unity.Services.Multiplayer;
-using Unity.Services.Multiplayer.Components;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -137,17 +136,18 @@ namespace Blocks.Sessions
             }
         }
 
-        public void JoinSessionAsync(SessionConnector connector)
+        public async Task JoinSessionAsync(ScriptableObject connection)
         {
-            try
+            if (connection is MatchmakingSessionConnector matchmakingConnector)
             {
-                //await MultiplayerService.Instance.JoinSessionByIdAsync(GetSelectedSessionId(), connector.GetJoinOptions());
-                connector.WithJoinById(GetSelectedSessionId());
-                connector.Execute();
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
+                try
+                {
+                    await MultiplayerService.Instance.JoinSessionByIdAsync(GetSelectedSessionId(), matchmakingConnector.ToJoinSessionOptions());
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogException(exception);
+                }
             }
         }
 

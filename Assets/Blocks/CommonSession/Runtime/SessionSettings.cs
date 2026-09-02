@@ -1,5 +1,6 @@
 using Unity.Services.Multiplayer;
 using UnityEngine;
+using Unity.Properties;
 
 #if !GAMEOBJECTS_NETCODE_2_AVAILABLE
 using System;
@@ -10,8 +11,11 @@ namespace Blocks.Sessions.Common
     [CreateAssetMenu(fileName = nameof(SessionSettings), menuName = "Services/Blocks/Session/" + nameof(SessionSettings))]
     public class SessionSettings : ScriptableObject
     {
+        [CreateProperty]
+        public SessionSettings Self => this;
+
         [Header("Session options")]
-        [Tooltip("Maximum number of players allowed in the session.")]
+[Tooltip("Maximum number of players allowed in the session.")]
         public int maxPlayers = 5;
         [Tooltip("The name of the created session. It can be used to display the list of existing sessions in the UI.")]
         public string sessionName = "default-session-name";

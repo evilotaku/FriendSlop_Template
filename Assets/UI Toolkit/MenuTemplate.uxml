@@ -10,23 +10,19 @@
     <ui:Label name="status-label" text="You are a host" style="color: rgb(240, 240, 248); -unity-font-style: bold; font-size: 28px; position: absolute; top: 1012px; left: 863px;"/>
     <ui:VisualElement name="SessionMenu" style="flex-grow: initial; width: 833px; height: 513px; top: 40%; left: 3%; flex-direction: column; background-color: rgba(0, 0, 0, 0.965); justify-content: center; align-items: center; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; border-top-left-radius: 31px; border-top-right-radius: 31px; border-bottom-right-radius: 31px; border-bottom-left-radius: 31px;">
         <ui:VisualElement style="flex-grow: 1; width: 473px; flex-direction: row; height: 96px; justify-content: center;">
-            <Blocks.Sessions.QuickJoinButton quick-join-settings="project://database/Assets/Blocks/MultiplayerSession/Settings/QuickJoinSettings.asset?fileID=11400000&amp;guid=342532e706f5ac34582e818ea7e1ae33&amp;type=2#QuickJoinSettings" data-source="project://database/Assets/Create%20or%20Join%20Session.asset?fileID=11400000&amp;guid=5ed08ce47af26dc40ae57e44228a4202&amp;type=2#Create or Join Session">
+            <Blocks.Sessions.QuickJoinButton quick-join-settings="project://database/Assets/Blocks/MultiplayerSession/Settings/QuickJoinSettings.asset?fileID=11400000&amp;guid=342532e706f5ac34582e818ea7e1ae33&amp;type=2#QuickJoinSettings" data-source="project://database/Assets/Multiplayer%20Connector.asset?fileID=11400000&amp;guid=cc25307f41e4d904d825ab3aeb5e1068&amp;type=2#Multiplayer Connector">
                 <Bindings>
                     <ui:DataBinding property="SessionSettings" binding-mode="ToTarget"/>
                 </Bindings>
             </Blocks.Sessions.QuickJoinButton>
-            <Blocks.Sessions.Common.LeaveSessionButton data-source="project://database/Assets/Create%20or%20Join%20Session.asset?fileID=11400000&amp;guid=5ed08ce47af26dc40ae57e44228a4202&amp;type=2#Create or Join Session">
+            <Blocks.Sessions.Common.LeaveSessionButton data-source="project://database/Assets/Multiplayer%20Connector.asset?fileID=11400000&amp;guid=cc25307f41e4d904d825ab3aeb5e1068&amp;type=2#Multiplayer Connector">
                 <Bindings>
                     <ui:DataBinding property="SessionType" data-source-path="m_MultiplayerSession.m_SessionType" binding-mode="ToTarget"/>
                 </Bindings>
             </Blocks.Sessions.Common.LeaveSessionButton>
         </ui:VisualElement>
-        <Blocks.Sessions.CreateSessionElement session-settings="project://database/Assets/Create%20or%20Join%20Session.asset?fileID=11400000&amp;guid=5ed08ce47af26dc40ae57e44228a4202&amp;type=2#Create or Join Session" style="width: 469px; height: 91px;"/>
-        <Blocks.Sessions.SessionBrowserElement name="SessionBrowserElement" session-settings="project://database/Assets/Create%20or%20Join%20Session.asset?fileID=11400000&amp;guid=5ed08ce47af26dc40ae57e44228a4202&amp;type=2#Create or Join Session" style="height: 440px;">
-            <Bindings>
-                <ui:DataBinding property="SessionSettings" binding-mode="ToTarget"/>
-            </Bindings>
-        </Blocks.Sessions.SessionBrowserElement>
+        <Blocks.Sessions.CreateSessionElement session-settings="project://database/Assets/Multiplayer%20Connector.asset?fileID=11400000&amp;guid=cc25307f41e4d904d825ab3aeb5e1068&amp;type=2#Multiplayer Connector" style="width: 469px; height: 91px;"/>
+        <Blocks.Sessions.SessionBrowserElement name="SessionBrowserElement" session-settings="project://database/Assets/Create%20or%20Join%20Session.asset?fileID=11400000&amp;guid=5ed08ce47af26dc40ae57e44228a4202&amp;type=2#Create or Join Session" data-source="project://database/Assets/Multiplayer%20Connector.asset?fileID=11400000&amp;guid=cc25307f41e4d904d825ab3aeb5e1068&amp;type=2#Multiplayer Connector" style="height: 440px;"/>
     </ui:VisualElement>
     <ui:Instance template="ChannelRoster" style="position: absolute; top: 40px; left: 1235px;"/>
 </ui:UXML>

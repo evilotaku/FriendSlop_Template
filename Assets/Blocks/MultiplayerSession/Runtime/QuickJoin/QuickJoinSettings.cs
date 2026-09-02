@@ -1,13 +1,17 @@
 using Unity.Services.Multiplayer;
 using UnityEngine;
+using Unity.Properties;
 
 namespace Blocks.Sessions
 {
     [CreateAssetMenu(fileName = nameof(QuickJoinSettings), menuName = "Services/Blocks/Session/" + nameof(QuickJoinSettings))]
     public class QuickJoinSettings : ScriptableObject
     {
+        [CreateProperty]
+        public QuickJoinSettings Self => this;
+
         [Header("QuickJoinSettings")]
-        [Tooltip("The timeout in seconds for the quick join to stop trying to join and either fail or create its own session is createSession is true.")]
+[Tooltip("The timeout in seconds for the quick join to stop trying to join and either fail or create its own session is createSession is true.")]
         public float timeout = 5f;
         [Tooltip("If true, the quick join will create a session if it cannot find one to join withing the given timeout time frame.")]
         public bool createSession = true;

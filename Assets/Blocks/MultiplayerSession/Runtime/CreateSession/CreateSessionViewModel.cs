@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Unity.Properties;
 using Unity.Services.Multiplayer;
-using Unity.Services.Multiplayer.Components;
 using UnityEngine.UIElements;
 
 namespace Blocks.Sessions
@@ -105,12 +104,6 @@ namespace Blocks.Sessions
         {
             sessionOptions.Name = SessionName;
             return await MultiplayerService.Instance.CreateSessionAsync(sessionOptions);
-        }
-
-        public void CreateSession(SessionConnector connector)
-        {
-            connector.WithCreateOrJoin(SessionName);
-            connector.Execute();
         }
 
         public void Dispose()

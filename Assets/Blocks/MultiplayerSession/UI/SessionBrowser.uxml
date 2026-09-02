@@ -3,12 +3,12 @@
         <ui:Label text="JOIN SESSION BY BROWSING" class="blocks-header blocks-header--space-bottom"/>
         <Blocks.Sessions.CreateSessionElement>
             <Bindings>
-                <ui:DataBinding property="SessionSettings" binding-mode="ToTarget" data-source-path=""/>
+                <ui:DataBinding property="SessionSettings" binding-mode="ToTarget" data-source-path="Self"/>
             </Bindings>
         </Blocks.Sessions.CreateSessionElement>
         <Blocks.Sessions.SessionBrowserElement class="blocks-container--stretch">
             <Bindings>
-                <ui:DataBinding property="SessionSettings" binding-mode="ToTarget" data-source-path=""/>
+                <ui:DataBinding property="SessionSettings" binding-mode="ToTarget" data-source-path="Self"/>
             </Bindings>
         </Blocks.Sessions.SessionBrowserElement>
     </ui:VisualElement>

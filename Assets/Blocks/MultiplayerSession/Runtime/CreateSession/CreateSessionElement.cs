@@ -1,10 +1,11 @@
+using System.Collections.Generic;
 using Blocks.Common;
 using Blocks.Sessions.Common;
-using System.Collections.Generic;
 using Unity.Properties;
-using Unity.Services.Multiplayer.Components;
 using UnityEngine;
 using UnityEngine.UIElements;
+
+using Unity.Services.Multiplayer.Components;
 
 namespace Blocks.Sessions
 {
@@ -15,7 +16,7 @@ namespace Blocks.Sessions
         const string k_CreateButtonText = "CREATE";
 
         [CreateProperty, UxmlAttribute]
-        public SessionConnector SessionSettings
+        public ScriptableObject SessionSettings
         {
             get => m_SessionSettings;
             set
@@ -28,7 +29,7 @@ namespace Blocks.Sessions
                     UpdateBindings();
             }
         }
-        SessionConnector m_SessionSettings;
+        ScriptableObject m_SessionSettings;
 
         CreateSessionViewModel m_ViewModel;
 
@@ -86,7 +87,7 @@ namespace Blocks.Sessions
 
         void CreateSession()
         {
-            if (!SessionSettings)
+            if (!m_SessionSettings)
             {
                 Debug.LogError("SessionSettings is null, it needs to be assigned in the uxml.");
                 return;
@@ -97,15 +98,43 @@ namespace Blocks.Sessions
                 return;
             }
 
-            //_ = m_ViewModel.CreateSessionAsync(SessionSettings.GetSessionOptions());
-            m_ViewModel.CreateSession(SessionSettings);
+            Unity.Services.Multiplayer.SessionOptions options = null;
+            if (m_SessionSettings is MatchmakingSessionConnector matchmakingConnector)
+            {
+                options = matchmakingConnector.ToSessionOptions();
+            }
+            else if (m_SessionSettings is SessionConnector sessionConnector)
+            {
+                var method = typeof(SessionConnector).GetMethod("BuildSessionOptions", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                options = (Unity.Services.Multiplayer.SessionOptions)method?.Invoke(sessionConnector, null);
+            }
+            else if (m_SessionSettings is SessionSettings oldSettings)
+            {
+                options = oldSettings.ToSessionOptions();
+            }
+
+            _ = m_ViewModel.CreateSessionAsync(options);
         }
 
         void UpdateBindings()
         {
             CleanupBindings();
 
-            m_ViewModel = new CreateSessionViewModel(SessionSettings?.MultiplayerSession.SessionType);
+            string sessionType = null;
+            if (m_SessionSettings is MatchmakingSessionConnector matchmakingConnector)
+            {
+                sessionType = matchmakingConnector.MultiplayerSession?.SessionType;
+            }
+            else if (m_SessionSettings is SessionConnector sessionConnector)
+            {
+                sessionType = sessionConnector.MultiplayerSession?.SessionType;
+            }
+            else if (m_SessionSettings is SessionSettings oldSettings)
+            {
+                sessionType = oldSettings.sessionType;
+            }
+
+            m_ViewModel = new CreateSessionViewModel(sessionType);
             foreach (var binding in m_Bindings)
             {
                 binding.dataSource = m_ViewModel;

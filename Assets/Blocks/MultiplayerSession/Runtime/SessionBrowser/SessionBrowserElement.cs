@@ -21,7 +21,7 @@ namespace Blocks.Sessions
         private const string k_SessionPlayerCountLabel = "SessionPlayerCountLabel";
 
         private int m_MaxSessionsDisplayed = 20;
-        private SessionConnector m_SessionSettings;
+        private ScriptableObject m_SessionSettings;
         private SessionBrowserViewModel m_ViewModel;
         private List<DataBinding> m_DataBindings;
 
@@ -29,7 +29,7 @@ namespace Blocks.Sessions
         private Button m_JoinSessionButton;
 
         [CreateProperty, UxmlAttribute]
-        public SessionConnector SessionSettings
+        public ScriptableObject SessionSettings
         {
             get => m_SessionSettings;
             set
@@ -106,14 +106,28 @@ namespace Blocks.Sessions
             }
 
             // fire and forget, so we don't block the UI thread
-            m_ViewModel.JoinSessionAsync(SessionSettings);
+            _ = m_ViewModel.JoinSessionAsync(SessionSettings);
         }
 
         private void UpdateBindingSources()
         {
             CleanupBindings();
 
-            m_ViewModel = new SessionBrowserViewModel(SessionSettings?.MultiplayerSession.SessionType);
+            string sessionType = null;
+            if (SessionSettings is MatchmakingSessionConnector matchmakingConnector)
+            {
+                sessionType = matchmakingConnector.MultiplayerSession?.SessionType;
+            }
+            else if (SessionSettings is SessionConnector sessionConnector)
+            {
+                sessionType = sessionConnector.MultiplayerSession?.SessionType;
+            }
+            else if (SessionSettings is SessionSettings oldSettings)
+            {
+                sessionType = oldSettings.sessionType;
+            }
+
+            m_ViewModel = new SessionBrowserViewModel(sessionType);
             foreach (var dataBinding in m_DataBindings)
             {
                 dataBinding.dataSource = m_ViewModel;
@@ -202,7 +216,11 @@ namespace Blocks.Sessions
             sessionPlayerCountLabel.AddToClassList(BlocksTheme.SpaceRight);
             container.Add(sessionPlayerCountLabel);
 
-            var sessionPlayerCountBinding = new DataBinding { bindingMode = BindingMode.ToTarget };
+            var sessionPlayerCountBinding = new DataBinding 
+            { 
+                dataSourcePath = new PropertyPath(nameof(SessionInfoViewModel.Self)),
+                bindingMode = BindingMode.ToTarget 
+            };
 
             // register a local converter to display relevant session properties as a formatted string
             sessionPlayerCountBinding.sourceToUiConverters
