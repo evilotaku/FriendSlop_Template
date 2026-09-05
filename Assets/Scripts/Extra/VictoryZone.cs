@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -34,8 +35,8 @@ public class VictoryZone : NetworkBehaviour
     {
         if (!IsServer || IsComplete.Value) return;
 
-        var item = other.GetComponent<PickupItem>();
-        if (item == null || item.HeldBy.Value != ulong.MaxValue) return; // PickupItem will set HeldBy to client ID of holder, or max value if none
+        var item = other.GetComponent<AttachableBehaviour>();
+        if (item == null || item.transform.parent == null) return; // AttachableBehaviour will be child of the player when held, so we check if it has a parent
 
         IsComplete.Value = true;
     }

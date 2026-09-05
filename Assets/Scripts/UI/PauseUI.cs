@@ -28,7 +28,7 @@ public class PauseUI : MonoBehaviour
         GameManager.OnGameStarted += OnGameStarted;
     }
 
-    private void UIReload(PanelRenderer panelRenderer, VisualElement root)
+    private void UIReload(PanelRenderer panelRenderer, VisualElement root, int version)
     {
         _pausePanel = root.Q<VisualElement>("pause-panel");
         _playerList = root.Q<ScrollView>("player-list");

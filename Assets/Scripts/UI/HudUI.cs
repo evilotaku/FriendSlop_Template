@@ -14,11 +14,12 @@ public class HudUI : MonoBehaviour
     {
         _panelRenderer = GetComponent<PanelRenderer>();
         _panelRenderer.RegisterUIReloadCallback(UIReload);
-        
+
         GameManager.OnGameStarted += Show;
     }
+       
 
-    private void UIReload(PanelRenderer panelRenderer, VisualElement root)
+    private void UIReload(PanelRenderer panelRenderer, VisualElement root, int version)
     {
         root.style.display = DisplayStyle.None;
         _root = root;

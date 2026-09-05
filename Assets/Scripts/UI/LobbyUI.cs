@@ -41,7 +41,7 @@ public class LobbyUI : MonoBehaviour
         SetIdle();
     }
 
-    private void UIReload(PanelRenderer panelRenderer, VisualElement root)
+    private void UIReload(PanelRenderer panelRenderer, VisualElement root, int version)
     {
         _hostBtn = root.Q<Button>("host-btn");
         _joinBtn = root.Q<Button>("join-btn");

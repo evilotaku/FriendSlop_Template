@@ -20,7 +20,7 @@ public class PlayerNameTag : NetworkBehaviour
         };
     }
 
-    void OnUIReload(PanelRenderer renderer, VisualElement rootElement)
+    void OnUIReload(PanelRenderer renderer, VisualElement rootElement, int version)
     {
         nameLabel.text = playerData.PlayerName.Value.ToString();
         nameLabel.style.unityTextAutoSize = new StyleTextAutoSize(new TextAutoSize(TextAutoSizeMode.BestFit, minSize: 10, maxSize: 20));
