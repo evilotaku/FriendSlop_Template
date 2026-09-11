@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "unity-mcp": {
+      "type": "stdio",
+      "command": "/c/Users/devit/AppData/Local/Unity/bin/unity",
+      "args": ["mcp"],
+      "cwd": "${workspaceFolder}",
+      "env": {}
+    }
+  }
+}

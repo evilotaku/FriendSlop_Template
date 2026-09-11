@@ -31,11 +31,9 @@ public class LobbyUI : MonoBehaviour
     private static readonly Color32 LightText = new Color32(240, 240, 248, 255);
 
     private void Awake()
-    {
-        var root = GetComponent<UIDocument>().rootVisualElement;
+    {        
         panelRenderer = GetComponent<PanelRenderer>();
         panelRenderer.RegisterUIReloadCallback(UIReload);
-
        
 
         SetIdle();

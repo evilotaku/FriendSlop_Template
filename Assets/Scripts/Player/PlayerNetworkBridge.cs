@@ -7,9 +7,9 @@ using UnityEngine.InputSystem;
 /// </summary>
 public class PlayerNetworkBridge : NetworkBehaviour
 {
-    private PlayerMovement _movement;
+    private CameraMovement _movement;
 
-    private void Awake() => _movement = GetComponent<PlayerMovement>();
+    private void Awake() => _movement = GetComponent<CameraMovement>();
 
     /// <summary>
     /// Handling logic for not allowing the player to roam in the menu state.

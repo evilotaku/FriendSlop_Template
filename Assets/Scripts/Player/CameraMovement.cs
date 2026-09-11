@@ -7,7 +7,7 @@ using UnityEngine.Rendering.Universal;
 /// <summary>
 /// Handles FPS movement, jumping, slamming, and camera look.
 /// </summary>
-public class PlayerMovement : MonoBehaviour
+public class CameraMovement : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Transform _cameraPoint;
@@ -117,7 +117,7 @@ public class PlayerMovement : MonoBehaviour
         if (!_isPlaying) return;
 
         HandleLook();       
-        HandleMovement();
+        //HandleMovement();
     }
 
     private void HandleLook()

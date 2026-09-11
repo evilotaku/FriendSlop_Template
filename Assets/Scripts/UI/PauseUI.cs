@@ -22,7 +22,7 @@ public class PauseUI : MonoBehaviour
 
     private void Start()
     {
-        var root = GetComponent<UIDocument>().rootVisualElement;
+        //var root = GetComponent<UIDocument>().rootVisualElement;
         panelRenderer = GetComponent<PanelRenderer>();
         panelRenderer.RegisterUIReloadCallback(UIReload);
         GameManager.OnGameStarted += OnGameStarted;

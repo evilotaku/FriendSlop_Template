@@ -1,3 +1,4 @@
+@ -1,109 +1,26 @@
 # This .gitignore file should be placed at the root of your Unity project directory
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
@@ -71,6 +72,27 @@ sysinfo.txt
 mono_crash.*
 
 # Builds
+# Unity-generated folders
+Library/
+Temp/
+obj/
+Build/
+
+# Unity specific
+*.meta
+*.unitypackage
+*.upm
+Packages/packages-lock.json
+
+# Code coverage
+coverage*/
+*.coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.coverage.*
+
+# Build artifacts
 *.apk
 *.aab
 *.unitypackage
@@ -107,3 +129,6 @@ InitTestScene*.unity*
 
 # AI tooling
 /AI/
+*.x86
+*.unitywebglbundle
+*.ipa

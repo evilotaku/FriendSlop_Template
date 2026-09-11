@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 [RequireComponent(typeof(UIDocument))]
 public class DemoManager : MonoBehaviour
 {
-    [SerializeField] private PlayerMovement _player;
+    [SerializeField] private CameraMovement _player;
 
     private UIDocument _doc;
 

@@ -14,6 +14,7 @@
     "com.unity.netcode.gameobjects": "2.13.2",
     "com.unity.probuilder": "6.1.2",
     "com.unity.project-auditor": "2.0.0",
+    "com.unity.project-auditor-rules": "2.0.0",
     "com.unity.render-pipelines.universal": "17.6.0",
     "com.unity.services.authentication": "3.7.4",
     "com.unity.services.multiplayer": "2.3.1",
@@ -55,7 +56,8 @@
     "com.unity.modules.vehicles": "1.0.0",
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0"
+    "com.unity.modules.xr": "1.0.0",
+    "com.unity.pipeline": "0.6.0-exp.1"
   },
   "scopedRegistries": [
     {

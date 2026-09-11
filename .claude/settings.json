@@ -1,0 +1,14 @@
+{
+  "model": "gemma4",
+  "unityCliPath": "/c/Users/devit/AppData/Local/Unity/bin/unity",
+  "mcpServers": {
+    "unity": {
+      "type": "stdio",
+      "command": "/c/Users/devit/AppData/Local/Unity/bin/unity",
+      "args": ["mcp"],
+      "cwd": "${workspaceFolder}",
+      "env": {}
+    }
+  },
+  "autoUpdatesChannel": "latest"
+}
