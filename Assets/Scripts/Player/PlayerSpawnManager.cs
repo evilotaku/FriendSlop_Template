@@ -51,9 +51,9 @@ public class PlayerSpawnManager : MonoBehaviour
         if (no == null) { Debug.LogError("[SpawnManager] Player prefab has no NetworkObject!"); return; }
 
         no.SpawnAsPlayerObject(clientId, destroyWithScene: true);
-
         var colour = go.GetComponent<PlayerColour>();
         if (colour != null) colour.PlayerIndex.Value = spawnIndex;
+
     }
 
     // Reset the index when the session ends so the next host starts fresh.

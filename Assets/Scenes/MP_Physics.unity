@@ -12541,8 +12541,7 @@ GameObject:
   - component: {fileID: 810519843}
   - component: {fileID: 810519842}
   - component: {fileID: 810519841}
-  - component: {fileID: 810519846}
-  - component: {fileID: 810519845}
+  - component: {fileID: 810519844}
   m_Layer: 0
   m_Name: Terrain
   m_TagString: Untagged
@@ -12626,7 +12625,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 43835904}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &810519845
+--- !u!114 &810519844
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -12635,33 +12634,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 810519840}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1418d5a5db734b949027d10e65be4d76, type: 3}
+  m_Script: {fileID: 11500000, guid: 6697f80743e5be14787f1410575f5cd9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Box3D.Hybrid::Box3D.Hybrid.Box3DBody
-  Type: 0
-  LinearDamping: 0
-  AngularDamping: 0.05
-  StartAwake: 1
-  AllowFastRotation: 0
---- !u!114 &810519846
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 810519840}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb284daa0a8c43629c0752baa13f6f7a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Box3D.Hybrid::Box3D.Hybrid.Box3DTerrainShape
-  Density: 1000
-  Friction: 0.6
-  Restitution: 0
-  Center: {x: 0, y: 0, z: 0}
-  Terrain: {fileID: 810519842}
-  SampleStride: 1
-  ApplyHoles: 1
+  m_EditorClassIdentifier: Assembly-CSharp::Box3DTerrain
+  unityTerrain: {fileID: 810519842}
 --- !u!43 &821237447
 Mesh:
   m_ObjectHideFlags: 0
@@ -15861,18 +15837,6 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 778512817820673755, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.9162
-      objectReference: {fileID: 0}
-    - target: {fileID: 778512817820673755, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.9162
-      objectReference: {fileID: 0}
-    - target: {fileID: 778512817820673755, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.9162
-      objectReference: {fileID: 0}
-    - target: {fileID: 778512817820673755, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
       propertyPath: m_LocalPosition.x
       value: 118.4
       objectReference: {fileID: 0}
@@ -15912,10 +15876,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3013377319921332071, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 690f5987adc2824499aec874b7c2517d, type: 2}
     - target: {fileID: 3373912634716443392, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
       propertyPath: m_InScenePlaced
       value: 1
@@ -15924,26 +15884,14 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 2324773582
       objectReference: {fileID: 0}
-    - target: {fileID: 3373912634716443392, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
-      propertyPath: InScenePlacedSourceGlobalObjectIdHash
-      value: 3342089112
-      objectReference: {fileID: 0}
     - target: {fileID: 3549143228078808580, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
       propertyPath: m_Name
       value: Item
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 5958553338473743434, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
-    - {fileID: 6247632711911718533, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3549143228078808580, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1820520938}
-    - targetCorrespondingSourceObject: {fileID: 3549143228078808580, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1820520937}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
 --- !u!43 &1108870552
 Mesh:
@@ -17017,71 +16965,6 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
---- !u!1 &1222585397
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1222585399}
-  - component: {fileID: 1222585398}
-  m_Layer: 0
-  m_Name: Network Simulator
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1222585398
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1222585397}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98d9db9626104da59357651088226725, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Multiplayer.Tools.NetworkSimulator.Runtime::Unity.Multiplayer.Tools.NetworkSimulator.Runtime.NetworkSimulator
-  m_PresetAsset: {fileID: 0}
-  m_PresetReference:
-    rid: 8444406666689249515
-  m_Scenario:
-    rid: -2
-  m_IsScenarioSettingsFolded: 0
-  AutoRunScenario: 0
-  references:
-    version: 2
-    RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
-    - rid: 8444406666689249515
-      type: {class: NetworkSimulatorPreset, ns: Unity.Multiplayer.Tools.NetworkSimulator.Runtime, asm: Unity.Multiplayer.Tools.NetworkSimulator.Runtime}
-      data:
-        <Name>k__BackingField: Home Broadband with Congested Network
-        <Description>k__BackingField: Desktop and console platforms trough congested networks (multiple downloads or streaming already using the network's maximum capacity). Medium ping, bad jitter and little packet loss.
-        <PacketDelayMs>k__BackingField: 50
-        <PacketJitterMs>k__BackingField: 50
-        <PacketLossInterval>k__BackingField: 0
-        <PacketLossPercent>k__BackingField: 1
---- !u!4 &1222585399
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1222585397}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &1249115075
 Mesh:
   m_ObjectHideFlags: 0
@@ -52942,94 +52825,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 43835904}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
---- !u!1 &1815096648
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1815096650}
-  - component: {fileID: 1815096649}
-  m_Layer: 0
-  m_Name: Box3D World
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1815096649
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1815096648}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b35a77537a004abf817cc0a267e75560, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Box3D.Hybrid::Box3D.Hybrid.Box3DWorld
-  Gravity: {x: 0, y: -9.81, z: 0}
-  SubStepCount: 4
-  WorkerCount: 0
-  DebugDraw: 0
-  DebugDrawRadius: 200
---- !u!4 &1815096650
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1815096648}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1820520936 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3549143228078808580, guid: 79e23aad5a6075041a5b4a9922955a28, type: 3}
-  m_PrefabInstance: {fileID: 1060863257}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1820520937
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1820520936}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1418d5a5db734b949027d10e65be4d76, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Box3D.Hybrid::Box3D.Hybrid.Box3DBody
-  Type: 2
-  LinearDamping: 0
-  AngularDamping: 0.05
-  StartAwake: 1
-  AllowFastRotation: 0
---- !u!114 &1820520938
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1820520936}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f9f68110aa149f18c0049fef979bb2d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Box3D.Hybrid::Box3D.Hybrid.Box3DBoxShape
-  Density: 1000
-  Friction: 0.6
-  Restitution: 0
-  Center: {x: 0, y: 0, z: 0}
-  Size: {x: 1, y: 1, z: 1}
 --- !u!1 &1837310590
 GameObject:
   m_ObjectHideFlags: 0
@@ -91139,5 +90934,3 @@ SceneRoots:
   - {fileID: 971321420}
   - {fileID: 950196601}
   - {fileID: 1060863257}
-  - {fileID: 1815096650}
-  - {fileID: 1222585399}

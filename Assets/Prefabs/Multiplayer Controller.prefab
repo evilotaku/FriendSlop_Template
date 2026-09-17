@@ -608,19 +608,16 @@ GameObject:
   - component: {fileID: 3441470315092595671}
   - component: {fileID: 6697547243049880800}
   - component: {fileID: 4279415011205897751}
-  - component: {fileID: 6960311668396443747}
   - component: {fileID: 80172497646478149}
   - component: {fileID: 5236446106750598467}
-  - component: {fileID: 8827137767473969666}
   - component: {fileID: 7562969832425493787}
-  - component: {fileID: -1968281005313488908}
   - component: {fileID: 8513228090813748716}
   - component: {fileID: 2777595174383168464}
   - component: {fileID: 1136474072527985140}
   - component: {fileID: 5186332602126272195}
   - component: {fileID: 834053069079980497}
-  - component: {fileID: 2272459404894329348}
-  - component: {fileID: 8824109104044600352}
+  - component: {fileID: 9088501237758059765}
+  - component: {fileID: -6227357016419604162}
   m_Layer: 8
   m_Name: Multiplayer Controller
   m_TagString: Untagged
@@ -638,7 +635,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3.1921, y: 3.1921, z: 3.1921}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1258079296759216926}
@@ -705,31 +702,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!143 &6960311668396443747
-CharacterController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4688565802699289721}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.5
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &80172497646478149
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -852,7 +824,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2823149549
+  GlobalObjectIdHash: 2154132529
   InScenePlacedSourceGlobalObjectIdHash: 2823149549
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -867,52 +839,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &8827137767473969666
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4688565802699289721}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
-  ShowTopMostFoldoutHeaderGroup: 1
-  NetworkTransformExpanded: 0
-  AutoOwnerAuthorityTickOffset: 1
-  PositionInterpolationType: 0
-  RotationInterpolationType: 0
-  ScaleInterpolationType: 0
-  PositionLerpSmoothing: 1
-  PositionMaxInterpolationTime: 0.1
-  RotationLerpSmoothing: 1
-  RotationMaxInterpolationTime: 0.1
-  ScaleLerpSmoothing: 1
-  ScaleMaxInterpolationTime: 0.1
-  AuthorityMode: 1
-  TickSyncChildren: 0
-  UseUnreliableDeltas: 0
-  SyncPositionX: 1
-  SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
-  SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
-  PositionThreshold: 0.001
-  RotAngleThreshold: 0.01
-  ScaleThreshold: 0.01
-  UseQuaternionSynchronization: 0
-  UseQuaternionCompression: 0
-  UseHalfFloatPrecision: 0
-  InLocalSpace: 0
-  SwitchTransformSpaceWhenParented: 0
-  Interpolate: 1
-  SlerpPosition: 0
 --- !u!114 &7562969832425493787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -929,19 +855,6 @@ MonoBehaviour:
   _playerCamera: {fileID: 4512239892720413868}
   _playerVCam: {fileID: 947415940709981736}
   _settings: {fileID: 11400000, guid: 4911b0824aafa4a4281a95aad41f8a2b, type: 2}
---- !u!114 &-1968281005313488908
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4688565802699289721}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ea20f97af3df1d4099ccfefb8c5c215, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &8513228090813748716
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1173,7 +1086,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
---- !u!114 &2272459404894329348
+--- !u!114 &9088501237758059765
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1182,17 +1095,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 4688565802699289721}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 36f11ee78c494e0cbe5deacd313d2663, type: 3}
+  m_Script: {fileID: 11500000, guid: 31c96106522d562419e9bef18548d66f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Box3D.Hybrid::Box3D.Hybrid.Box3DCapsuleShape
-  Density: 1000
-  Friction: 0.6
-  Restitution: 0
-  Center: {x: 0, y: 0, z: 0}
-  Radius: 0.5
-  Height: 2
-  Direction: 1
---- !u!114 &8824109104044600352
+  m_EditorClassIdentifier: Assembly-CSharp::VisualBodyProxy
+  ShowTopMostFoldoutHeaderGroup: 1
+  _shapes:
+  - ShapeType: 2
+    BoxHalfExtents:
+      x: 0.5
+      y: 0.5
+      z: 0.5
+    SphereRadius: 0.5
+    CapsuleRadius: 1.5
+    CapsuleTop: 2
+    CapsuleBottom: -2
+    Density: 1
+    Friction: 0.6
+    Restitution: 0
+--- !u!114 &-6227357016419604162
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1201,14 +1121,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 4688565802699289721}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1418d5a5db734b949027d10e65be4d76, type: 3}
+  m_Script: {fileID: 11500000, guid: 4ea20f97af3df1d4099ccfefb8c5c215, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Box3D.Hybrid::Box3D.Hybrid.Box3DBody
-  Type: 0
-  LinearDamping: 0
-  AngularDamping: 0.05
-  StartAwake: 1
-  AllowFastRotation: 0
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &4745091484607412819
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,19 +4,33 @@ using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.Netcode;
-using Unity.Services.Relay.Models;
 using UnityEngine;
-using static Unity.Collections.AllocatorManager;
-using static Unity.U2D.Physics.PhysicsWorld;
 
+[DefaultExecutionOrder(-100)]
 public class NetworkPhysicsManager : NetworkBehaviour
 {
     public static NetworkPhysicsManager Instance { get; private set; }
 
+    public event Action<int> OnBeforeSimulationTick;
+
     private World _box3DWorld;
+
+    public World ActiveWorld => _box3DWorld;
+
+    public const float TICK_RATE = 60f;
     private const float TICK_DELTA = 1f / 60f;
     private const int BUFFER_SIZE = 128;
-   
+
+    // Configurable precision boundary (Adjust depending on acceptable network tolerance)
+    private const float DESYNC_THRESHOLD_POS = 0.001f; // ~3.1cm positional tolerance
+
+    // Cosine of the maximum allowed angular divergence angle.
+    // For a 0.5-degree angular limit: Cos(0.5° / 2) ≈ 0.99999
+    private const float DESYNC_THRESHOLD_ROT = 0.99999f;
+
+    [SerializeField]
+    public float RotationSpeed = 15f;
+
     // --- PRE-ALLOCATED ZERO-ALLOCATION SNAPSHOT STRATEGY ---
     // A fixed pool of managed byte arrays matching your maximum expected snapshot size
     private byte[][] _snapshotBytePool = new byte[BUFFER_SIZE][];
@@ -25,13 +39,17 @@ public class NetworkPhysicsManager : NetworkBehaviour
     // Tracks which ring slots actively hold valid structural ticks
     private int[] _bufferedTicks = new int[BUFFER_SIZE];
 
+    // Tracks the last server frame validation checkpoint we processed to prevent duplicate executions
+    private int _lastProcessedServerTick = -1;
+
 
     // Direct mapping for applying simulation inputs
-    private Dictionary<ulong, Body> _entityToBody = new Dictionary<ulong, Body>();
+   
+    private Dictionary<EntityId, Body> _entityToBody = new Dictionary<EntityId, Body>();
 
     // --- INPUT RING BUFFER SETUP ---
-    // Maps each integer tick to a nested sub-dictionary tracking individual entity payloads
-    private Dictionary<ulong, PlayerInputPayload>[] _inputHistoryBuffer = new Dictionary<ulong, PlayerInputPayload>[BUFFER_SIZE];
+    // Maps each integer tick to a nested sub-dictionary tracking individual entity payloads    
+    private Dictionary<EntityId, PlayerInputPayload>[] _inputHistoryBuffer = new Dictionary<EntityId, PlayerInputPayload>[BUFFER_SIZE];
 
     private float _renderTimeAccumulator = 0f;
     private List<VisualBodyProxy> _activeVisualProxies = new List<VisualBodyProxy>();
@@ -39,18 +57,29 @@ public class NetworkPhysicsManager : NetworkBehaviour
     // Keep tracking registrations clean
     public void TrackVisualProxy(VisualBodyProxy proxy) => _activeVisualProxies.Add(proxy);
     public void UntrackVisualProxy(VisualBodyProxy proxy) => _activeVisualProxies.Remove(proxy);
+    public void RegisterNewSpawnedBody(EntityId entityId, Body body) => _entityToBody[entityId] = body;
+    public void UnregisterAndDestroyBody(EntityId entityId, Body body)
+    {
+        _entityToBody.Remove(entityId);
+        if (body.IsValid) body.Destroy();
+    }
 
 
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
-        _box3DWorld = Box3DWorld.Instance.World;
-
+        _box3DWorld = World.Create(WorldDef.Default);
+        FindAnyObjectByType<UnityTerrainToBox3D>().BuildBox3DTerrain(_box3DWorld);
         // Pre-instantiate internal slot dictionary components to prevent real-time GC overhead
         for (int i = 0; i < BUFFER_SIZE; i++)
         {
-            _inputHistoryBuffer[i] = new Dictionary<ulong, PlayerInputPayload>();
+            _inputHistoryBuffer[i] = new Dictionary<EntityId, PlayerInputPayload>();
 
             _snapshotBytePool[i] = new byte[128 * 1024];
             _bufferedTicks[i] = -1; // -1 represents an empty historical slot
@@ -61,20 +90,60 @@ public class NetworkPhysicsManager : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
+        NetworkManager.NetworkTickSystem.Tick += OnNetworkTickExecution;
+    }
+        
+    private void OnNetworkTickExecution()
+    {
+        int tick = IsServer ? (int)NetworkManager.ServerTime.Tick : (int)NetworkManager.LocalTime.Tick;
+        OnBeforeSimulationTick?.Invoke(tick);
+
+        // Host targets skip manual client validation passes
         if (IsServer)
         {
-            // The server drives its execution timeline directly using NGO's fixed network tick interval
-            NetworkManager.NetworkTickSystem.Tick += OnServerNetworkTick;
+            OnServerNetworkTick();
+            return;
         }
-        else
-        {
-            NetworkManager.OnReanticipate += OnGlobalReanticipate;
-        }
+
+        // Client Only: Advance the local timeline simulation forward normally.
+        // If a desync event arrived earlier via the network event packet, 
+        // the history ring buffer was already fixed before this tick runs!
+        int currentPredictedTick = NetworkManager.LocalTime.Tick;
+
+        ApplyInputsForTick(currentPredictedTick);
+        _box3DWorld.Step(TICK_DELTA, subStepCount: 4);
+        SynchronizeVisualTransforms(currentPredictedTick);
+        SaveCurrentFrameSnapshot(currentPredictedTick);
     }
 
-    public void RegisterNewSpawnedBody(ulong entityRawBits, Body body)
+    public void VerifyClientSimulationState(VisualBodyProxy proxy, PhysicsStatePayload serverSnap)
     {
-        _entityToBody[entityRawBits] = body;
+        // Guard Clause: Prevent reprocessing a historical milestone tick we have already reconciled
+        if (serverSnap.StateTick <= _lastProcessedServerTick) return;
+
+        int currentPredictedTick = NetworkManager.LocalTime.Tick;
+        int historicalIndex = serverSnap.StateTick % BUFFER_SIZE;
+
+        // Ensure our local buffer actually contains matching data records for that historic tick
+        if (_bufferedTicks[historicalIndex] == serverSnap.StateTick)
+        {
+            Vector3 localPredictedPos = proxy.GetHistoricalTargetPosition(historicalIndex);
+            float sqDist = Vector3.SqrMagnitude(localPredictedPos - serverSnap.Position);
+
+            Quaternion localPredictedRot = proxy.GetHistoricalTargetRotation(historicalIndex); 
+            float absoluteRotDot = Mathf.Abs(Quaternion.Dot(localPredictedRot, serverSnap.Rotation));
+
+            if (sqDist > DESYNC_THRESHOLD_POS || absoluteRotDot < DESYNC_THRESHOLD_ROT)
+            {
+                Debug.LogWarning($"[Physics Correction] Misprediction caught at server frame {serverSnap.StateTick}. Distance: {Mathf.Sqrt(sqDist)}m. Restoring timeline.");
+
+                // Execute rollback from the mispredicted server tick back up to our active client tick
+                ExecuteRollbackAndStep(serverSnap.StateTick, currentPredictedTick, proxy, serverSnap);
+
+                // Mark this tick milestone as successfully validated
+                _lastProcessedServerTick = serverSnap.StateTick;
+            }
+        }
     }
 
     private void Update()
@@ -104,57 +173,39 @@ public class NetworkPhysicsManager : NetworkBehaviour
     /// </summary>
     private void OnServerNetworkTick()
     {
-        int currentServerTick = (int)NetworkManager.ServerTime.Tick;
+        int currentServerTick = NetworkManager.ServerTime.Tick;
 
-        // 1. Process inputs received from all connected clients for this specific tick window
+        // 1. Process client inputs and execute physics steps forward
         ApplyInputsForTick(currentServerTick);
-
-        // 2. Advance the authoritative simulation world state cleanly
+        if (!_box3DWorld.IsValid)
+        {
+            print("Invalid Box3D World");
+            return;
+        }
         _box3DWorld.Step(TICK_DELTA, subStepCount: 4);
 
-        // 3. Synchronize server-side GameObjects so visual things like triggers/raycasts work on the host
-        SynchronizeVisualTransforms();
-
-        // 4. Capture the absolute snapshot of the newly resolved world state boundary
-        Recording authoritativeSnapshot = Recording.Create();
-        _box3DWorld.StartRecording(authoritativeSnapshot);
-        _box3DWorld.StopRecording();
-
-        // 5. Package and broadcast the state down to all client simulation nodes
-        StateSnapshotPacket packet = new StateSnapshotPacket
-        {
-            StateTick = currentServerTick,
-            CompressedWorldData = authoritativeSnapshot.GetData().ToArray() // Extract raw byte serialization buffer
-        };
-
-        // Important: Always clean up native unmanaged allocations to prevent massive memory leaks!
-        authoritativeSnapshot.Destroy();
-
-        // Broadcast to everyone using the modern universal attribute mapping flow
-        BroadcastStateToClientsRpc(packet);
+        // 2. Sync all bodies to their visual proxies and network variables
+        SynchronizeVisualTransforms(currentServerTick);
+        SaveCurrentFrameSnapshot(currentServerTick);
     }
 
-    private void SynchronizeVisualTransforms()
+    private void SynchronizeVisualTransforms(int currentSimTick)
     {
         // Clear out the spent time remainder window since we just processed a real step boundary
         _renderTimeAccumulator = 0f;
 
-        foreach (BodyMoveEvent moveEvent in _box3DWorld.GetBodyMoveEvents())
+        foreach (var proxy in _activeVisualProxies)
         {
-            if (moveEvent.UserData != null)
+            if (proxy != null && proxy.MyNativeBody.IsValid)
             {
-                ulong persistentEntityIdRaw = (ulong)moveEvent.UserData;
-                EntityId unityId = EntityId.FromULong(persistentEntityIdRaw);
-                GameObject gameObj = Resources.EntityIdToObject(unityId) as GameObject;
+                float3 pos = proxy.MyNativeBody.Position;
+                quaternion rot = proxy.MyNativeBody.Rotation;
 
-                if (gameObj != null)
+                proxy.UpdatePhysicsTargetState(currentSimTick, pos, rot);
+                
+                if (IsServer)
                 {
-                    // Instead of assigning the transform directly, update the caching proxy!
-                    if (gameObj.TryGetComponent<VisualBodyProxy>(out var proxy))
-                    {
-                        proxy.UpdatePhysicsTargetState(moveEvent.Transform.Position, moveEvent.Transform.Rotation);
-                        proxy.ServerUpdateNetworkVariable(moveEvent.Transform.Position, moveEvent.Transform.Rotation);
-                    }
+                    proxy.ServerUpdateNetworkVariable(currentSimTick, pos, rot);
                 }
             }
         }
@@ -168,104 +219,75 @@ public class NetworkPhysicsManager : NetworkBehaviour
         int ringIndex = currentLocalTick % BUFFER_SIZE;
 
         // Accumulate or update the entry slot associated with this specific network frame
-        _inputHistoryBuffer[ringIndex][inputPayload.TargetEntityIdRaw] = inputPayload;
+        _inputHistoryBuffer[ringIndex][inputPayload.TargetEntityId] = inputPayload;
     }
+      
 
-    private void OnGlobalReanticipate(double lastRoundTripTime)
-    {      
-        // 1. Calculate how many discrete ticks are represented by the RTT duration
-        float tickRate = NetworkManager.NetworkTickSystem.TickRate;
-        int rttTicksAgo = Mathf.RoundToInt((float)lastRoundTripTime * tickRate);
-
-        // 2. Identify the absolute integer timeline boundaries
-        int currentPredictedTick = (int)NetworkManager.LocalTime.Tick;
-        int serverTick = currentPredictedTick - rttTicksAgo;
-       
-        // Ensure we don't pass negative bounds or attempt impossible rollbacks
-        if (serverTick < 0 || serverTick >= currentPredictedTick) return;
-        
-        // 3. Fire the unmanaged Box3D re-simulation chain
-        ExecuteRollbackAndStep(serverTick, currentPredictedTick);
-    }
-
-    public void ExecuteRollbackAndStep(int targetServerTick, int currentPredictedTick)
+    public void ExecuteRollbackAndStep(int rollbackServerTick, int currentPredictedTick, VisualBodyProxy misPredictedProxy, PhysicsStatePayload serverState)
     {
-        // Use standard integer math for the ring buffer index calculations
-        int rollbackIndex = targetServerTick % BUFFER_SIZE;
+        print("Rollback initiated from server tick " + rollbackServerTick + " to predicted tick " + currentPredictedTick);
+        int rollbackIndex = rollbackServerTick % BUFFER_SIZE;
 
-        if (_bufferedTicks[rollbackIndex] != targetServerTick)
+        if (_bufferedTicks[rollbackIndex] != rollbackServerTick)
         {
-            Debug.LogWarning($"Rollback failed: Historical frame for tick {targetServerTick} has already expired.");
+            Debug.LogWarning($"Rollback failed: Historical frame for tick {rollbackServerTick} has already expired.");
             return;
         }
 
         byte[] rawStateBuffer = _snapshotBytePool[rollbackIndex];
-        int stateBufferLength = _snapshotDataLengths[rollbackIndex];
 
-
-
-        // 1. Restore the World state
-        var replayer = ReplayPlayer.Create(rawStateBuffer, workerCount: 1);
+        // 1. Restore the World state from snapshot
+        var replayer = ReplayPlayer.Create(rawStateBuffer, workerCount: 1);        
+        _box3DWorld = replayer.World;
+        
+        // 2. Important: Update all handles in our dictionaries and proxies to point to the new World's bodies
+        foreach (var proxy in _activeVisualProxies)
         {
-            _box3DWorld = replayer.World;
+            if (proxy != null)
+            {
+                // Find the matching body in the new world using the stable ID
+                if (_box3DWorld.TryGetBody(proxy.MyNativeBody.Id, out Body newBody))
+                {
+                    proxy.SetNativeBody(newBody);
+                    _entityToBody[proxy.NetworkObject.GetEntityId()] = newBody;
+                }
+            }
         }
 
-        _entityToBody.Clear();
-
-        // 2. Re-simulate forward using explicit integer tick bounds
-        int framesToReSimulate = currentPredictedTick - targetServerTick;
+        // 3. Apply the authoritative server state correction for the specific mispredicted body
+        EntityId misPredictedId = misPredictedProxy.NetworkObject.GetEntityId();
+        if (_entityToBody.TryGetValue(misPredictedId, out Body correctedBody))
+        {
+            correctedBody.SetTransform(serverState.Position, serverState.Rotation);
+        }
+      
+        // 4. Re-simulate forward using explicit integer tick bounds
+        int framesToReSimulate = currentPredictedTick - rollbackServerTick;
 
         for (int i = 0; i < framesToReSimulate; i++)
         {
-            int currentSimTick = targetServerTick + i;
-
+            int currentSimTick = rollbackServerTick + i;
 
             ApplyInputsForTick(currentSimTick);
-
             _box3DWorld.Step(TICK_DELTA, subStepCount: 4);
-
-            foreach (BodyMoveEvent moveEvent in _box3DWorld.GetBodyMoveEvents())
-            {
-                if (moveEvent.UserData != null)
-                {
-                    ulong persistentEntityIdRaw = (ulong)moveEvent.UserData;
-                    _entityToBody[persistentEntityIdRaw] = new Body { Id = moveEvent.BodyId };
-
-                    EntityId unityId = EntityId.FromULong(persistentEntityIdRaw);
-                    GameObject visualGameObj = Resources.EntityIdToObject(unityId) as GameObject;
-
-                    if (visualGameObj != null)
-                    {
-                        // Pushes target updates to the proxy caching script 
-                        // instead of overwriting transform components immediately!
-                        if (visualGameObj.TryGetComponent<VisualBodyProxy>(out var proxy))
-                        {
-                            proxy.UpdatePhysicsTargetState(moveEvent.Transform.Position, moveEvent.Transform.Rotation);
-                        }
-                    }
-                }
-            }
-
-            // Overwrite the circular index buffer directly using integer ticks
+            SynchronizeVisualTransforms(currentSimTick);
             SaveCurrentFrameSnapshot(currentSimTick);
-
-            replayer.Destroy();
         }
+
+        replayer.Destroy();
     }
 
-    private void ApplyInputsForTick(int targetTick)
+    private void ApplyInputsForTick(int rollbackTick)
     {
-        int ringIndex = targetTick % BUFFER_SIZE;
-        Dictionary<ulong, PlayerInputPayload> tickInputs = _inputHistoryBuffer[ringIndex];
-
+        int ringIndex = rollbackTick % BUFFER_SIZE;
+        Dictionary<EntityId, PlayerInputPayload> tickInputs = _inputHistoryBuffer[ringIndex];
         // Process every registered object interaction stored for this exact historic tick
         foreach (var pair in tickInputs)
         {
-            ulong entityRawId = pair.Key;
+            EntityId entityId = pair.Key;
             PlayerInputPayload payload = pair.Value;
-
             // Apply modifications strictly if the proxy pointer exists in our current timeline slice
-            if (_entityToBody.TryGetValue(entityRawId, out Body activeBody))
+            if (_entityToBody.TryGetValue(entityId, out Body activeBody))
             {
                 float3 force = new float3(payload.MoveDirection.x, 0, payload.MoveDirection.y) * 15f;
                 activeBody.SetLinearVelocity(new float3(force.x, activeBody.GetLinearVelocity().y, force.z));
@@ -274,6 +296,11 @@ public class NetworkPhysicsManager : NetworkBehaviour
                 {
                     activeBody.ApplyLinearImpulse(new float3(0f, 6.0f, 0f), activeBody.Position, wake: true);
                 }
+                
+                quaternion nextRotation = math.slerp(activeBody.Rotation, payload.LookRotation, RotationSpeed * TICK_DELTA);
+                activeBody.SetTransform(activeBody.Position, nextRotation);
+                activeBody.SetAngularVelocity(float3.zero);
+
             }
         }
     }
@@ -307,63 +334,38 @@ public class NetworkPhysicsManager : NetworkBehaviour
     [Rpc(SendTo.Server)]
     public void SubmitInputDataRpc(InputPacket packet, RpcParams rpcParams = default)
     {
+       
         // 1. Identify which client sent this packet for security auditing
         ulong senderClientId = rpcParams.Receive.SenderClientId;
 
         // 2. Unpack the redundant input stream entries
-        foreach (var payload in packet.RedundantInputs)
+        for (int i = 0; i < packet.RedundantInputs.Length; i++)
         {
+            var payload = packet.RedundantInputs[i];
+            
             // Determine the precise frame this component targets
             // (Calculated down from the main packet's historical index)
-            int payloadTick = packet.TargetTick - (packet.RedundantInputs.Length - 1);
+            int payloadTick = packet.TargetTick - (packet.RedundantInputs.Length - 1 - i);
 
             // SECURITY CHECK: Ensure the requesting client actually owns the NetworkObject 
             // tied to this EntityId before processing physics inputs!
             if (ValidateClientOwnership(senderClientId, payload.TargetEntityId))
-            {
+            {                
                 // 3. Inject the client's input directly into the server's history timeline
                 int ringIndex = payloadTick % BUFFER_SIZE;
-                _inputHistoryBuffer[ringIndex][payload.TargetEntityIdRaw] = payload;
+                _inputHistoryBuffer[ringIndex][payload.TargetEntityId] = payload;
             }
         }
     }
 
-    /// <summary>
-    /// Unified modern RPC method routing authoritative server milestones to all clients.
-    /// </summary>
-    [Rpc(SendTo.NotServer)]
-    private void BroadcastStateToClientsRpc(StateSnapshotPacket packet)
-    {
-        // Server handles bypass this packet since they already calculated it natively
-        if (IsServer) return;
-
-        // 1. Calculate the target index inside our pre-allocated snapshot arrays
-        int ringIndex = packet.StateTick % BUFFER_SIZE;
-        int incomingLength = packet.CompressedWorldData.Length;
-
-        // Dynamic buffer guard: Expand our local pool element if the server state outgrows it
-        if (incomingLength > _snapshotBytePool[ringIndex].Length)
-        {
-            System.Array.Resize(ref _snapshotBytePool[ringIndex], incomingLength * 2);
-        }
-
-        // 2. High-performance, zero-allocation memory block transfer straight into our array cache
-        System.Buffer.BlockCopy(packet.CompressedWorldData, 0, _snapshotBytePool[ringIndex], 0, incomingLength);
-
-        // Update tracking parameters so ExecuteRollbackAndStep knows this frame slice is authoritative
-        _snapshotDataLengths[ringIndex] = incomingLength;
-        _bufferedTicks[ringIndex] = packet.StateTick;
-
-        // 3. Unity Netcode for GameObjects' Client Anticipation layer (like AnticipatedNetworkTransform)
-        // will now evaluate for state deviation. If a misprediction occurred, OnReanticipate will trigger,
-        // and our ExecuteRollbackAndStep routine will automatically feed from this exact array slice.
-
-    }
-
     private bool ValidateClientOwnership(ulong senderId, EntityId targetId)
     {
-        GameObject obj = Resources.EntityIdToObject(targetId) as GameObject;
-        if (obj == null) return false;
+        NetworkObject obj = Resources.EntityIdToObject(targetId) as NetworkObject;
+        if (obj == null)
+        {
+            print("Network object not found for EntityId: " + targetId);
+            return false;
+        }
 
         if (obj.TryGetComponent<NetworkObject>(out var netObj))
         {
@@ -371,24 +373,14 @@ public class NetworkPhysicsManager : NetworkBehaviour
         }
         return false;
     }
-
-    public void UnregisterSpawnedBodyOnly(ulong entityRawBits)
-    {
-        if (_entityToBody.TryGetValue(entityRawBits, out Body body))
-        {
-            _entityToBody.Remove(entityRawBits);
-        }
-    }
+    
     public override void OnNetworkDespawn()
     {
-        if (IsServer)
+        if (NetworkManager != null && NetworkManager.NetworkTickSystem != null)
         {
-            NetworkManager.NetworkTickSystem.Tick -= OnServerNetworkTick;
+            NetworkManager.NetworkTickSystem.Tick -= OnNetworkTickExecution;
         }
-        else
-        {
-            NetworkManager.OnReanticipate -= OnGlobalReanticipate;
-        }
+        _box3DWorld.Destroy();
         base.OnNetworkDespawn();
     }
 }

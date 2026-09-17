@@ -8,6 +8,7 @@ public class PlayerController : NetworkBehaviour
 {
     PlayerInput input;
     float2 moveInput;
+    quaternion lookInput;
     bool wantsToJump;
 
     private Queue<PlayerInputPayload> _inputHistory = new Queue<PlayerInputPayload>();
@@ -17,36 +18,71 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsOwner) return;
         input = GetComponent<PlayerInput>();
-        NetworkManager.NetworkTickSystem.Tick += OnLocalNetworkTick;
+        NetworkPhysicsManager.Instance.OnBeforeSimulationTick += OnLocalNetworkTick;
     }
     private void Update()
     {
         if (!IsOwner) return;
 
+        Camera mainCam = Camera.main;
+        if (mainCam == null) return;
+
         // Gather structural movement variables
         var rawMoveInput = input.actions["Move"].ReadValue<Vector2>();
-        if(math.lengthsq(rawMoveInput) > 1f)
+
+        // Calculate camera-relative movement
+        Transform cameraTransform = mainCam.transform;
+        Vector3 forward = cameraTransform.forward;
+        Vector3 right = cameraTransform.right;
+
+        forward.y = 0f;
+        right.y = 0f;
+        forward.Normalize();
+        right.Normalize();
+
+        Vector3 desiredMoveDirection = forward * rawMoveInput.y + right * rawMoveInput.x;
+
+        if (math.lengthsq(desiredMoveDirection) > 1f)
         {
-            rawMoveInput = math.normalize(rawMoveInput);
+            desiredMoveDirection = math.normalize(desiredMoveDirection);
         }
-        moveInput = rawMoveInput;
+        moveInput = new float2(desiredMoveDirection.x, desiredMoveDirection.z);
+
         if(input.actions["Jump"].triggered)
         {
             wantsToJump = true;
         }
+
+        Ray ray = mainCam.ScreenPointToRay(Mouse.current.position.ReadValue());
+        Plane groundPlane = new Plane(Vector3.up, transform.position); // Create a plane sitting at character height
+
+        lookInput = transform.rotation; // Default fallback to current orientation
+
+        if (groundPlane.Raycast(ray, out float rayDistance))
+        {
+            Vector3 worldMousePoint = ray.GetPoint(rayDistance);
+            Vector3 lookDirection = (worldMousePoint - transform.position);
+            lookDirection.y = 0f; // Lock calculations strictly to the horizontal Yaw plane
+
+            if (lookDirection.sqrMagnitude > 0.001f)
+            {
+                // Create a clean LookRotation pointing straight along the horizontal surface
+                lookInput = Quaternion.LookRotation(lookDirection.normalized, Vector3.up);
+            }
+        }
     }
 
-    private void OnLocalNetworkTick()
+    private void OnLocalNetworkTick(int localTick)
     {
         // 2. Identify the active discrete tracking coordinate frame
-        int localTick = (int)NetworkManager.LocalTime.Tick;
-        ulong rawEntityId = EntityId.ToULong(GetEntityId());
+        ulong rawEntityId = EntityId.ToULong(NetworkObject.GetEntityId());
 
         // Assemble the pure data network payload structure for this specific step slice
         PlayerInputPayload currentPayload = new PlayerInputPayload
         {
             TargetEntityIdRaw = rawEntityId,
             MoveDirection = moveInput,
+            LookRotation = lookInput,
             JumpPressed = wantsToJump
         };
 
@@ -76,7 +112,8 @@ public class PlayerController : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         if (!IsOwner) return;
-        NetworkManager.NetworkTickSystem.Tick -= OnLocalNetworkTick;
+        if (NetworkPhysicsManager.Instance != null)
+            NetworkPhysicsManager.Instance.OnBeforeSimulationTick -= OnLocalNetworkTick;
         base.OnNetworkDespawn();
     }
 }
